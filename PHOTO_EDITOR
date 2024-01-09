@@ -1,0 +1,132 @@
+from PIL import Image, ImageEnhance, ImageTk
+import tkinter as tk
+from tkinter import filedialog, Scale, Button
+
+class ImageProcessorApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Image Processor")
+
+        # Resimlerin gösterileceği yer
+        self.label_original = tk.Label(self.root, text="Original")
+        self.label_original.grid(row=0, column=0, pady=10)
+
+        self.label_brightness = tk.Label(self.root, text="Brightness")
+        self.label_brightness.grid(row=0, column=1, pady=10)
+
+        self.label_contrast = tk.Label(self.root, text="Contrast")
+        self.label_contrast.grid(row=0, column=2, pady=10)
+
+        # Resimleri göstermek için etiketler
+        self.original_image_label = tk.Label(self.root)
+        self.original_image_label.grid(row=1, column=0, pady=10)
+
+        self.adjusted_image_label_brightness = tk.Label(self.root)
+        self.adjusted_image_label_brightness.grid(row=1, column=1, pady=10)
+
+        self.adjusted_image_label_contrast = tk.Label(self.root)
+        self.adjusted_image_label_contrast.grid(row=1, column=2, pady=10)
+
+        # Resim işleme düğmeleri ve kaydırıcılar
+        self.button_open = tk.Button(self.root, text="Open Image", command=self.open_image)
+        self.button_open.grid(row=2, column=0, pady=10)
+
+        self.brightness_slider = Scale(self.root, from_=0, to=2, orient=tk.HORIZONTAL, resolution=0.01, command=self.update_brightness)
+        self.brightness_slider.set(1.0)
+        self.brightness_slider.grid(row=2, column=1, pady=10)
+
+        self.contrast_slider = Scale(self.root, from_=-100, to=100, orient=tk.HORIZONTAL, resolution=1, command=self.update_contrast)
+        self.contrast_slider.set(0)
+        self.contrast_slider.grid(row=2, column=2, pady=10)
+
+        # Save Image düğmesini ekleyin
+        self.button_save = Button(self.root, text="Save Image", command=self.save_image)
+        self.button_save.grid(row=2, column=3, pady=10)
+
+        # İlk olarak resimleri None olarak ayarlayalım
+        self.original_image = None
+        self.adjusted_image_brightness = None
+        self.adjusted_image_contrast = None
+
+        # Küçük önizleme boyutu
+        self.preview_size = (100, 100)
+
+    def open_image(self):
+        file_path = filedialog.askopenfilename(title="Select an Image File", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
+        if file_path:
+            self.original_image = Image.open(file_path)
+            if self.original_image.mode:
+                self.adjusted_image_brightness = self.original_image.copy()
+                self.adjusted_image_contrast = self.original_image.copy()
+                self.show_images()
+            else:
+                print("Resmin modu belirlenemiyor.")
+
+    def adjust_brightness(self, image, factor):
+        enhancer = ImageEnhance.Brightness(image)
+        return enhancer.enhance(factor)
+
+    def adjust_contrast(self, image, factor):
+        enhancer = ImageEnhance.Contrast(image)
+        return enhancer.enhance(factor)
+
+    def update_brightness(self, value):
+        brightness = self.brightness_slider.get()
+        if self.original_image and self.original_image.mode:
+            self.adjusted_image_brightness = self.adjust_brightness(self.original_image, brightness)
+            self.show_images()
+
+    def update_contrast(self, value):
+        contrast = self.contrast_slider.get()
+        if self.original_image and self.original_image.mode:
+            if contrast == 0:
+               self.adjusted_image_contrast = self.original_image.copy()
+            else:
+               self.adjusted_image_contrast = self.adjust_contrast(self.original_image, contrast)
+            self.show_images()
+
+    def save_image(self):
+        # Kaydedilecek dosya yolu için bir pencere aç
+        file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg"), ("All files", "*.*")])
+
+        if file_path:
+            # Seçilen dosya yolu ile resmi kaydet
+            if self.adjusted_image_contrast:
+                self.adjusted_image_contrast.save(file_path)
+                print("Resim başarıyla kaydedildi.")
+            else:
+                print("Kaydedilecek resim bulunamadı.")
+
+    def show_images(self):
+        if self.original_image and self.original_image.mode:
+            self.show_image(self.original_image, self.original_image_label)
+
+        if self.adjusted_image_brightness and self.adjusted_image_brightness.mode:
+            self.show_image(self.adjusted_image_brightness, self.adjusted_image_label_brightness)
+
+        if self.adjusted_image_contrast and self.adjusted_image_contrast.mode:
+            self.show_image(self.adjusted_image_contrast, self.adjusted_image_label_contrast)
+
+    def show_image(self, image, label):
+        # Resmi ekran boyutuna tam dolduracak şekilde ayarla
+        width, height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        resized_image = image.resize((width, height), Image.LANCZOS)
+
+        # Küçük önizleme boyutuna da ayarla
+        preview_image = image.resize(self.preview_size, Image.LANCZOS)
+
+        # Resmi Tkinter PhotoImage'a çevir
+        tk_image = ImageTk.PhotoImage(preview_image)
+
+        # Resmi göster
+        label.configure(image=tk_image)
+        label.image = tk_image  # Referansı korumak için
+        label.grid(row=1, column=0, pady=10)
+
+def main():
+    root = tk.Tk()
+    app = ImageProcessorApp(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
