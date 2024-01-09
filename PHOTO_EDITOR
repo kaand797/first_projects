@@ -1,3 +1,4 @@
+# THIS HOMEWORK MADE BY CHATGPT I JUST ASKED RIGHT QUESTIONS TO GPT :)))))
 from PIL import Image, ImageEnhance, ImageTk
 import tkinter as tk
 from tkinter import filedialog, Scale, Button
