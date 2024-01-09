@@ -1,0 +1,137 @@
+import matplotlib.pyplot as plt
+import time
+
+# !
+# !!
+# !!!
+# !!!!
+# !!!!!
+# READ THIS BEFORE RUNING CODE 
+# !!!!!
+# !!!!
+# !!!
+# !!
+# !
+
+# WRITE THIS IN TERMINAL : pip install matplotlib
+
+# this code is written by chat gpt so i just asked right questions :))
+
+def draw_line(x1, y1, x2, y2):
+  dx = x2 - x1
+  dy = y2 - y1
+  slope_error = dy - dx
+
+  x, y = x1, y1
+
+  plt.plot(x, y, marker='o', color='black')
+
+  for i in range(dx):
+    while slope_error >= 0:
+      y = y + 1
+      slope_error = slope_error - dx
+
+    x = x + 1
+    slope_error = slope_error + dy
+
+    plt.plot(x, y, marker='o', color='black')
+    plt.text(x + 0.1, y - 0.5, 'Line', fontsize=8, color='black')
+    plt.pause(0.1)  # Pause to show the line step by step
+    plt.draw()
+
+
+def draw_midpoint_circle(radius, x_center, y_center):
+  x = radius
+  y = 0
+  p = 1 - radius  # Başlangıç hata terimi
+
+  points = []
+
+  while x >= y:
+    points.extend([
+        (x + x_center, y + y_center),
+        (-x + x_center, y + y_center),
+        (x + x_center, -y + y_center),
+        (-x + x_center, -y + y_center),
+        (y + x_center, x + y_center),
+        (-y + x_center, x + y_center),
+        (y + x_center, -x + y_center),
+        (-y + x_center, -x + y_center),
+    ])
+
+    y += 1
+
+    if p <= 0:
+      p = p + 2 * y + 1
+    else:
+      x -= 1
+      p = p + 2 * y - 2 * x + 1
+
+  x_values, y_values = zip(*points)
+  plt.scatter(x_values,
+              y_values,
+              marker='o',
+              label='Midpoint Circle',
+              color='blue')
+  plt.text(x_center + radius,
+           y_center + radius,
+           'Midpoint Circle',
+           fontsize=8,
+           color='blue')
+
+
+def draw_bresenham_circle(radius, x_center, y_center):
+  x = 0
+  y = radius
+  p = 3 - 2 * radius  # Başlangıç hata terimi
+
+  points = []
+
+  while x <= y:
+    points.extend([
+        (x + x_center, y + y_center),
+        (-x + x_center, y + y_center),
+        (x + x_center, -y + y_center),
+        (-x + x_center, -y + y_center),
+        (y + x_center, x + y_center),
+        (-y + x_center, x + y_center),
+        (y + x_center, -x + y_center),
+        (-y + x_center, -x + y_center),
+    ])
+
+    x += 1
+
+    if p <= 0:
+      p = p + 4 * x + 6
+    else:
+      y -= 1
+      p = p + 4 * (x - y) + 10
+
+  x_values, y_values = zip(*points)
+  plt.scatter(x_values,
+              y_values,
+              marker='o',
+              label='Bresenham Circle',
+              color='red')
+  plt.text(x_center + radius,
+           y_center + radius,
+           'Bresenham Circle',
+           fontsize=8,
+           color='red')
+
+
+# Example usage
+draw_line(1, 1, 8, 5)
+plt.pause(8)  # Pause for 8 seconds (8 sec for the line)
+
+plt.clf()  # Clear the plot
+draw_midpoint_circle(5, 5, 5)
+plt.pause(8)  # Pause for 8 seconds (8 sec for the Midpoint Circle)
+
+plt.clf()  # Clear the plot
+draw_bresenham_circle(5, 12, 5)
+plt.pause(8)  # Pause for 8 seconds (8 sec for the Bresenham Circle)
+
+plt.gca().set_aspect('equal', adjustable='box')
+plt.legend()
+plt.show()
